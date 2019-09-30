@@ -1,0 +1,87 @@
+<style>
+	.til{
+		width: 95%;
+		border-radius: 5px;
+		margin: 0 auto;
+		margin-top: 10px;
+		border: 1px solid #333;
+	}
+	.prove{
+		background-color: #333;
+		color: white;
+		line-height: 2rem;
+	}
+	.cctv{
+		text-align: center;
+	}
+</style>
+<div class="city">
+	<!-- 发布职位 -->
+	<div class="ann row">
+		<div class="col-10"></div>
+		<div class="col">
+			<button type="button" class="btn btn-warning" id="btn_add">添加职位</button>
+		</div>
+	</div>
+	<div class="til">
+		<div class="prove">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;普工</div>
+		<div class="toon row">
+			
+		</div>
+	</div>
+</div>
+<script>
+	var baseURL="http://203.195.246.58:7777";
+	//加载数据
+	function reloadData(){
+		var url = baseURL+"/Jobs/findAll";
+		$.get(url,function(result){
+			if(result.status === 200){
+				$(".toon").empty();
+				result.data.forEach(function(item){
+					$(`<div class="col-1 cctv" value="`+item.id+`">`+item.name+`</div>`).appendTo(".toon")
+				})
+				$(`
+					<div class="col-1 btn_add">
+						<div class="btn-sm btn-primary">添加</div>
+					</div>
+					<div class="col-2 input_msg" style="display:none;">
+						<div class="input-group mb-3 input-group-sm">
+						  <input id="input_name" type="text" class="form-control input_name" placeholder="name">
+						  <div class="input-group-append">
+						    <button class="btn btn-outline-secondary sub_btn" type="button">提交</button>
+						  </div>
+						</div>
+					</div>
+					`).appendTo(".toon")
+			}
+		})
+	}
+	$(function(){
+		//添加按钮
+		$(".city").on("click",'.btn_add',function(event){
+
+			$(this).css("display","none")
+
+			$(this).next(".input_msg").css("display","block")
+		})
+		//提交按钮
+		$(".city").on("click",'.sub_btn',function(event){
+			$(this).parents(".input_msg").prev(".btn_add").css("display","block")
+			$(this).parents(".input_msg").css("display","none")
+			var name =$(this).parents("div").prev(".input_name").val()
+			var url=baseURL+"/Jobs/saveOrUpdate";
+			var data={
+				name:name
+			}
+			$.post(url,data,function(result){
+				if (result.status==200) {
+					alert("添加成功")
+						reloadData()
+				}
+			})
+		})
+		
+		reloadData();
+	})
+</script>

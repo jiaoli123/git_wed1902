@@ -1,0 +1,822 @@
+<style>
+	.thead_nav{
+		background-color: lightblue;
+	}
+	.modal-backdrop.show {
+		display: none;
+	}
+	.layui-tab-title{
+		margin-bottom: 0;
+	}
+	table{
+		text-align: center;
+	}
+	tbody{
+		text-align: center;
+	}
+</style>
+<script>
+	var id;
+	var baseURL="http://203.195.246.58:7777";
+	sessionStorage.setItem("lid",null)
+	//加载商家数据
+	function reloadData1(){
+		var url = baseURL+"/Business/findAll";
+		$.get(url,function(result){
+			data = result.data
+				// console.log(data)
+			if(result.status === 200){
+				//清空数据
+				$("#shenhe1_table tbody").empty();
+				result.data.forEach(function(item){
+					if (item.status=="待审核") {
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200">
+							<div class="btn caozuo btn-success">通过</div>
+							<div class="btn caozuo btn-danger">拒绝</div>
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}else if(item.status=="拒绝"){
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200" style="color:red">
+							拒绝
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}else if(item.status=="审核通过"){
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200" style="color:green">
+							审核通过
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}
+				});
+			}
+		})
+	}
+	//除重函数
+	function chuchong(arr){
+		var zu = []
+		for(let i = 0;i<arr.length;i++)
+		{
+			if(zu.indexOf(arr[i]) == -1)
+			{
+				zu.push(arr[i])
+			}
+		}
+		return zu
+	}
+	// 关闭模态框
+	function modalclose(){
+		$("#myModal").modal("hide");
+	}
+	//时间转换
+	var dateParse=(dataString)=>{
+		  if(dataString){
+		    let date = new Date(dataString);
+		    let Y = date.getFullYear() + '-';
+		    let M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+		    let D = (date.getDate()< 10 ? '0'+date.getDate() : date.getDate())+' ';
+		    let h = (date.getHours()< 10 ? '0'+date.getHours() : date.getHours())+ ':';
+		    let m = (date.getMinutes()< 10 ? '0'+date.getMinutes() : date.getMinutes())+ ':';
+		    let s = (date.getSeconds()< 10 ? '0'+date.getSeconds() : date.getSeconds());
+		    return Y+M+D+h+m+s;
+		  }else{
+		    return '';
+		  }
+		}
+	//商家审核
+	$(function(){
+		//详情
+		$("#shenhe1_table").on("click","a",function(event){
+			$("#myModal").modal("show");
+			var id=$(this).parents("tr").children().eq(0).find("input").val();
+			var url=baseURL+"/Business/findById";
+			var data={
+				id:id
+			}
+		    $.get(url,data,function(result){
+				$(".modal_nav").empty();
+				var a=result.data;
+				$(`<ul>
+					<li>ID：`+a.id+`</li>
+					<li>企业名称：`+a.name+`</li>
+					<li>联系人：`+a.contactName+`</li>
+					<li>联系方式 ：`+a.contactPhone+`</li>
+					<li>行业：`+a.industry+`</li>
+					<li>所在地：`+a.location+`</li>
+					<li>公司规模：`+a.scale+`</li>
+					<li>成立时间：`+a.establishedTime+`</li>	
+					<li>注册资金：`+a.registeredCapital+`</li>
+					<li>简介：`+a.description+`</li>
+				</ul>`).appendTo(".modal_nav")
+			})
+		})
+		//搜索
+		$("#search_submit1").on("click",function(event){
+			var search_val = $("#search1").val();
+			if($(".saosuo1").text() == '筛选行业'){
+				$.get(baseURL+"/Business/findByIndustry","industry="+search_val,function(result){
+					if (result.status===200) {
+						$("#shenhe1_table tbody").empty();
+						result.data.forEach(function(item){
+							if (item.status=="待审核") {
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200">
+							<div class="btn caozuo btn-success">通过</div>
+							<div class="btn caozuo btn-danger">拒绝</div>
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}else if(item.status=="拒绝"){
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200" style="color:red">
+							拒绝
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}else if(item.status=="审核通过"){
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200" style="color:green">
+							审核通过
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}
+						})
+					}
+				})
+			}else if($(".saosuo1").text() == '筛选位置'){
+				$.get(baseURL+"/Business/findByLocation","location="+search_val,function(result){
+					if (result.status===200) {
+						$("#shenhe1_table tbody").empty();
+						result.data.forEach(function(item){
+							if (item.status=="待审核") {
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200">
+							<div class="btn caozuo btn-success">通过</div>
+							<div class="btn caozuo btn-danger">拒绝</div>
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}else if(item.status=="拒绝"){
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200" style="color:red">
+							拒绝
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}else if(item.status=="审核通过"){
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200" style="color:green">
+							审核通过
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}
+						})
+					}
+				})
+			}else if($(".saosuo1").text() == '筛选规模'){
+				$.get(baseURL+"/Business/findByScale","scale="+search_val,function(result){
+					if (result.status===200) {
+						$("#shenhe1_table tbody").empty();
+						result.data.forEach(function(item){
+							if (item.status=="待审核") {
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200">
+							<div class="btn caozuo btn-success">通过</div>
+							<div class="btn caozuo btn-danger">拒绝</div>
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}else if(item.status=="拒绝"){
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200" style="color:red">
+							拒绝
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}else if(item.status=="审核通过"){
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.name+`</td>
+						<td>`+item.contactName+`</td>
+						<td>`+item.contactPhone+`</td>
+                        <td>`+item.industry+`</td>
+                        <td>`+item.location+`</td>
+                        <td>`+item.scale+`</td>
+                        <td>
+                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+                        </td>
+						<td width="200" style="color:green">
+							审核通过
+						</td>
+					</tr>`).appendTo("#shenhe1_table tbody");
+					}
+
+						})
+					}
+				})
+			}else if($(".saosuo1").text() == '不做筛选'){
+				reloadData1();
+			}
+		})
+		//操作
+		$("#shenhe1_tbody").on("click",".btn",function(event){
+			var value2 =$(this).text();
+			var id = $(this).parents("tr").children().eq(0).children().eq(0).attr("value")
+			var status1 = ""
+			var name,contactName,contactPhone,industry,location,scale,establishedTime,registeredCapital,description,businessLicense,province,city
+			// alert(value2)
+			if(value2 == '通过')
+			{
+				status = "审核通过";
+			}
+			else if(value2 == '拒绝')
+			{
+				status = "拒绝"
+			}
+			// alert(status)
+			$.ajax(baseURL+"/Business/findById",{
+				async:false,
+				type:"GET",
+				data:"id="+id,
+				success:function(a){
+					name = a.data.name
+					contactName = a.data.contactName
+					contactPhone = a.data.contactPhone
+					industry = a.data.industry
+					location = a.data.location
+					scale = a.data.scale
+					establishedTime = a.data.establishedTime
+					registeredCapital = a.data.registeredCapital
+					description = a.data.description
+					businessLicense = a.data.businessLicense
+					province = a.data.province
+					city = a.data.city					
+				}
+			})
+			var data={
+				id:id,
+				name:name,
+				contactName:contactName,
+				contactPhone:contactPhone,
+				industry:industry,
+				location:location,
+				scale:scale,
+				establishedTime:establishedTime,
+				registeredCapital:registeredCapital,
+				description:description,
+				businessLicense:businessLicense,
+				province:province,
+				city:city,
+				status:status
+			}
+			var url=baseURL+"/Business/saveOrUpdate";
+			$.post(url,data,function(result){
+				if (result.status==200) {
+					reloadData1();
+				}
+			})
+		})
+		//追加表头
+		$(`<tr>
+			<td>#</td>
+			<td>企业名称</td>
+			<td>发布人</td>
+			<td>联系方式</td>
+			<td>行业</td>
+			<td>所在地</td>
+			<td>公司规模</td>
+			<td>详情</td>
+			<td>操作</td>
+		</tr>`).appendTo("#two")
+
+		reloadData1();
+	})
+	//加载招聘数据
+	function reloadData2(){
+		var url = baseURL+"/Employment/findAll";
+		$.get(url,function(result){
+			data = result.data
+				// console.log(data)
+			if(result.status === 200){
+				//清空数据
+				$("#shenhe2_table tbody").empty();
+				result.data.forEach(function(item){
+					if (item.auditStatus=="待审核") {
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.title+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+	                        <td>`+item.job+`</td>
+	                        <td>`+dateParse(item.publishTime)+`</td>
+	                        <td>
+	                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+	                        </td>
+							<td width="200">
+								<div class="btn caozuo btn-success">通过</div>
+								<div class="btn caozuo btn-danger">拒绝</div>
+							</td>
+						</tr>`).appendTo($("#shenhe2_table tbody"))
+					}else if(item.auditStatus=="拒绝"){
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.title+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+	                        <td>`+item.job+`</td>
+	                        <td>`+dateParse(item.publishTime)+`</td>
+	                        <td>
+	                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+	                        </td>
+							<td width="200" style="color:red">
+								拒绝
+							</td>
+						</tr>`).appendTo($("#shenhe2_table tbody"))
+					}else if(item.auditStatus=="审核通过"){
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.title+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+	                        <td>`+item.job+`</td>
+	                        <td>`+dateParse(item.publishTime)+`</td>
+	                        <td>
+	                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+	                        </td>
+							<td width="200" style="color:green">
+							审核通过
+							</td>
+						</tr>`).appendTo($("#shenhe2_table tbody"))
+					}
+				});
+			}
+
+		});
+	}
+	//招聘审核
+	$(function(){
+		//操作
+		$("#shenhe2_tbody").on("click",".btn",function(event){
+			var value2 =$(this).text();
+			var id = $(this).parents("tr").children().eq(0).children().eq(0).attr("value")
+			var auditStatus="";
+			var title,contactName,contactPhone,job,publishTime,welfare,salary,description,status,num,businessId,workingHours,jobId,city,province,startTime,endTime
+			// alert(id)
+			// alert(value2)
+			if(value2 == '通过')
+			{
+				auditStatus = "审核通过";
+			}
+			else if(value2 == '拒绝')
+			{
+				auditStatus = "拒绝"
+			}
+			$.ajax(baseURL+"/Employment/findById",{
+				async:false,
+				type:"GET",
+				data:"id="+id,
+				success:function(a){
+					title = a.data.title
+					contactName = a.data.contactName
+					contactPhone = a.data.contactPhone
+					job = a.data.job
+					welfare = a.data.welfare
+					salary = a.data.salary
+					description = a.data.description
+					status = a.data.status
+					num = a.data.num
+					businessId = a.data.businessId
+					workingHours = a.data.workingHours
+					jobId = a.data.jobId					
+					city = a.data.city					
+					province = a.data.province
+		}
+			})
+			// alert(status)
+			var data={
+				id:id,
+				auditStatus:auditStatus,
+				title:title,
+				contactName:contactName,
+				contactPhone:contactPhone,
+				job:job,
+				description:description,
+				workingHours:workingHours,
+				num:num,
+				salary:salary,
+				status:status,
+				welfare:welfare,
+				businessId:businessId,
+				city:city,
+				province:province,
+				jobId:jobId
+			}
+			var url=baseURL+"/Employment/saveOrUpdate";
+			$.post(url,data,function(result){
+				if (result.status==200) {
+					reloadData2();
+				}
+			})
+		})
+		//详情
+		$("#shenhe2_table").on("click","a",function(event){
+			$("#myModal").modal("show");
+			var id=$(this).parents("tr").children().eq(0).find("input").val();
+			console.log(id)
+			var url=baseURL+"/Employment/findById";
+			var data={
+				id:id
+			}
+			$.get(url,data,function(result){
+				$(".modal_nav").empty();
+				var a=result.data;
+				$(`<ul>
+					<li>ID：`+a.id+`</li>
+					<li>招聘标题：`+a.title+`</li>
+					<li>发布人：`+a.contactName+`</li>
+					<li>联系方式 ：`+a.contactPhone+`</li>
+					<li>职位：`+a.job+`</li>
+					<li>发布时间：`+dateParse(a.publishTime)+`</li>
+					<li>福利：`+a.welfare+`</li>
+					<li>薪水：`+a.salary+`</li>	
+					<li>招聘状态：`+a.status+`</li>
+					<li>数量：`+a.num+`</li>
+					<li>商业ID：`+a.businessId+`</li>
+					<li>描述：`+a.description+`</li>
+				</ul>`).appendTo(".modal_nav")
+			})
+		})
+		//追加表头
+		$(`<tr>
+			<td>#</td>
+			<td>招聘标题</td>
+			<td>发布人</td>
+			<td>联系方式</td>
+			<td>职位</td>
+			<td>发布时间</td>
+			<td>详情</td>
+			<td>操作</td>
+		</tr>`).appendTo("#three")
+		//职位搜索
+		$.get(baseURL+"/Employment/findAll",function(result){
+			if (result.status===200) {
+				var a=[];
+				result.data.forEach(function(item){
+						a.push(item.job)
+				})
+				a=chuchong(a);
+				a.forEach(function(item){
+					$(`
+	   				 <option value="`+item+`">`+item+`</option>
+	    			`).appendTo("#one")
+				})
+			}
+		})
+		//职位搜索1
+		$("#one").change(function(){
+			if($("#one").val()==""){
+				reloadData();
+			}
+			var job=$(this).val()
+			$.get(baseURL+"/Employment/findByJob","job="+job,function(result){
+				if (result.status===200) {
+					$("#shenhe2_table tbody").empty();
+					result.data.forEach(function(item){
+						if (item.auditStatus=="待审核") {
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.title+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+	                        <td>`+item.job+`</td>
+	                        <td>`+dateParse(item.publishTime)+`</td>
+	                        <td>
+	                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+	                        </td>
+							<td width="200">
+								<div class="btn caozuo btn-success">通过</div>
+								<div class="btn caozuo btn-danger">拒绝</div>
+							</td>
+						</tr>`).appendTo($("#shenhe2_table tbody"))
+					}else if(item.auditStatus=="拒绝"){
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.title+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+	                        <td>`+item.job+`</td>
+	                        <td>`+dateParse(item.publishTime)+`</td>
+	                        <td>
+	                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+	                        </td>
+							<td width="200" style="color:red">
+								拒绝
+							</td>
+						</tr>`).appendTo($("#shenhe2_table tbody"))
+					}else if(item.auditStatus=="审核通过"){
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.title+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+	                        <td>`+item.job+`</td>
+	                        <td>`+dateParse(item.publishTime)+`</td>
+	                        <td>
+	                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+	                        </td>
+							<td width="200" style="color:green">
+							审核通过
+							</td>
+						</tr>`).appendTo($("#shenhe2_table tbody"))
+					}
+					})
+				}
+			})
+		})
+		//搜索2
+		$("#search_submit2").on("click",function(event){
+			var search_val = $("#search2").val();
+			if($(".saosuo2").text() == '筛选标题'){
+				$.get(baseURL+"/Employment/findByTitle","title="+search_val,function(result){
+					if (result.status===200) {
+						$("#shenhe2_table tbody").empty();
+						result.data.forEach(function(item){
+							if (item.auditStatus=="待审核") {
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.title+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+	                        <td>`+item.job+`</td>
+	                        <td>`+dateParse(item.publishTime)+`</td>
+	                        <td>
+	                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+	                        </td>
+							<td width="200">
+								<div class="btn caozuo btn-success">通过</div>
+								<div class="btn caozuo btn-danger">拒绝</div>
+							</td>
+						</tr>`).appendTo($("#shenhe2_table tbody"))
+					}else if(item.auditStatus=="拒绝"){
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.title+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+	                        <td>`+item.job+`</td>
+	                        <td>`+dateParse(item.publishTime)+`</td>
+	                        <td>
+	                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+	                        </td>
+							<td width="200" style="color:red">
+								拒绝
+							</td>
+						</tr>`).appendTo($("#shenhe2_table tbody"))
+					}else if(item.auditStatus=="审核通过"){
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.title+`</td>
+							<td>`+item.contactName+`</td>
+							<td>`+item.contactPhone+`</td>
+	                        <td>`+item.job+`</td>
+	                        <td>`+dateParse(item.publishTime)+`</td>
+	                        <td>
+	                        	<a class="btn" value="`+item.id+`" href="#">详情</a>
+	                        </td>
+							<td width="200" style="color:green">
+							审核通过
+							</td>
+						</tr>`).appendTo($("#shenhe2_table tbody"))
+					}
+						})
+					}
+				})
+			}else if($(".saosuo2").text() == '不做筛选'){
+				reloadData2()
+			}
+		})
+		reloadData2();
+	})
+</script>
+<div class="main">
+	<div class="layui-tab">
+	  <ul class="layui-tab-title">
+	    <li class="layui-this">商家审核</li>
+	    <li>招聘审核</li>
+	  </ul>
+	  <div class="layui-tab-content">
+	    <div class="layui-tab-item layui-show">
+	    	<div class="form-row">
+				<!-- 查询 -->
+				<div class="col-3">
+					<div class="input-group mb-3">
+					  <div class="input-group-prepend">
+					    <button class="btn btn-outline-secondary dropdown-toggle saosuo1" type="button" data-toggle="dropdown">筛选类型</button>
+					    <div class="dropdown-menu open">
+					      <a class="dropdown-item item1" href="#">不做筛选</a>
+					      <a class="dropdown-item item2" href="#">筛选行业</a>
+					      <a class="dropdown-item item3" href="#">筛选位置</a>
+					      <a class="dropdown-item item4" href="#">筛选规模</a>
+					    </div>
+					    <!-- 点击筛选的切换 -->
+					    <script>
+					    	$(function() {
+					    		$(".dropdown-item").on("click",function(event){
+					    			$(".saosuo1").text($(this).text())
+					    		})
+					    	})
+					    </script>
+					  </div>
+					  <input id="search1" type="text" class="form-control" placeholder="搜索" style="text-indent: 1em;">
+						<div class="input-group-prepend">
+						    <span id="search_submit1" class="input-group-text" style="cursor:pointer;" id="basic-addon1">提交</span>
+						</div>
+					</div>
+				</div>
+				<div class="col-1">
+					<button type="button" class="btn btn-primary" id="btn_add">一键通过</button>
+				</div>
+			</div>
+			<table class="table table-bordered" id="shenhe1_table">
+				<thead class="thead_nav" id="two">
+
+				</thead>
+				<tbody id="shenhe1_tbody">
+						
+				</tbody>
+			</table>
+	    </div>
+	    <div class="layui-tab-item">
+	    	<div class="form-row">
+				<div class="input-group col-md-2 mb-3">
+				  	<select class="custom-select" id="one">
+				    	<option selected>全部</option>
+				  	</select>
+				</div>
+				<div class="col-1">
+					<button type="button" class="btn btn-primary" id="btn_add">一键通过</button>
+				</div>
+				<div class="col-6"></div>
+					<!-- 查询 -->
+					<div class="col-3">
+						<div class="input-group mb-3">
+						  <div class="input-group-prepend">
+						    <button class="btn btn-outline-secondary dropdown-toggle saosuo2" type="button" data-toggle="dropdown">筛选类型</button>
+						    <div class="dropdown-menu open">
+						      <a class="dropdown-item item5" href="#">不做筛选</a>
+						      <a class="dropdown-item item6" href="#">筛选标题</a>
+						    </div>
+						    <!-- 点击筛选的切换 -->
+						    <script>
+						    	$(function() {
+						    		$(".dropdown-item").on("click",function(event){
+						    			$(".saosuo2").text($(this).text())
+						    		})
+						    	})
+						    </script>
+						  </div>
+						  <input id="search2" type="text" class="form-control" placeholder="搜索" style="text-indent: 1em;">
+							<div class="input-group-prepend">
+							    <span id="search_submit2" class="input-group-text" style="cursor:pointer;" id="basic-addon1">提交</span>
+							</div>
+						</div>
+					</div>
+			</div>
+			<table class="table table-bordered" id="shenhe2_table">
+				<thead class="thead_nav" id="three">
+					
+				</thead>
+				<tbody id="shenhe2_tbody">
+						
+				</tbody>
+			</table>
+	    </div>
+	  </div>
+	</div>
+	<!--详情 modal 1 -->
+	<div class="modal modal1" tabindex="-1" id="myModal" role="dialog">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">详情</h5>
+	        <button type="button">
+	          <span onclick="modalclose()">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body modal_nav">
+	        <!-- <p>默认内容</p> -->
+
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" onclick="modalclose()">关闭</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+<!-- /modal 1 -->
+</div>

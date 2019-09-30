@@ -1,0 +1,139 @@
+<style>
+	.thead_nav{
+		background-color: lightblue;
+	}
+	.modal-backdrop.show {
+		display: none;
+	}
+	.layui-tab-title{
+		margin-bottom: 0;
+	}
+	table{
+		text-align: center;
+		margin-top: 10px;
+	}
+</style>
+<script>
+	var baseURL="http://203.195.246.58:7777";
+	//时间转换
+	var dateParse=(dataString)=>{
+	    if(dataString){
+		    let date = new Date(dataString);
+		    let Y = date.getFullYear() + '-';
+		    let M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+		    let D = (date.getDate()< 10 ? '0'+date.getDate() : date.getDate())+' ';
+		    let h = (date.getHours()< 10 ? '0'+date.getHours() : date.getHours())+ ':';
+		    let m = (date.getMinutes()< 10 ? '0'+date.getMinutes() : date.getMinutes())+ ':';
+		    let s = (date.getSeconds()< 10 ? '0'+date.getSeconds() : date.getSeconds());
+		    return Y+M+D+h+m+s;
+		}else{
+		    return '';
+		}
+	}
+	// 关闭模态框
+	function modalclose(){
+		$("#myModal").modal("hide");
+	}
+	//加载数据
+	function reloadData(){
+		var url = baseURL+"/EmploymentJobhunter/findAllWithJobhAndEmpl";
+		$.get(url,function(result){
+			data = result.data
+				// console.log(data)
+			if(result.status === 200){
+				//清空数据
+				$("#qz-customer_table tbody").empty();
+				result.data.forEach(function(item){
+					$(`<tr>
+						<td value="`+item.id+`">`+item.jobhunter.username+`</td>
+						<td>`+item.jobhunter.telephone+`</td>
+                        <td>`+item.employment.job+`</td>
+                        <td><a href="#" class="btn xiangqing" onclick="modalshow(`+item.id+`)">详情</a></td>
+						<td>
+							`+dateParse(item.askTime)+`
+						</td>
+					</tr>`).appendTo("#qz-customer_table tbody");
+				});
+			}
+
+		});
+	}
+	//modal1显示
+	function modalshow(xiangqing_id){
+		$(".modal1").modal("show")
+		$.get(baseURL+"/EmploymentJobhunter/findAllWithJobhAndEmpl","id="+xiangqing_id,function(result){
+			if(result.status == 200){
+				for (let i=0;i<result.data.length;i++) {
+					if (result.data[i].id==xiangqing_id) {
+						$(".modal_nav").empty();
+						var item=result.data[i];
+						$(`<ul>
+							<li>ID：`+item.jobhunter.id+`</li>
+							<li>用户名：`+item.jobhunter.username+`</li>
+							<li>真实名称：`+item.jobhunter.realname+`</li>
+							<li>手机号 ：`+item.jobhunter.telephone+`</li>
+							<li>密码：`+item.jobhunter.password+`</li>
+							<li>出生日期：`+item.jobhunter.birth+`</li>
+							<li>工作时间：`+item.jobhunter.workTime+`</li>
+							<li>性别：`+item.jobhunter.gender+`</li>	
+							<li>求职状态：`+item.jobhunter.currentStatus+`</li>
+							<li>学历：`+item.jobhunter.education+`</li>
+							<li>简介：`+item.jobhunter.resume+`</li>
+						</ul>`).appendTo(".modal_nav")	
+					}
+				}					
+			}
+		})
+
+		
+	}
+	$(function(){
+		reloadData();
+	})
+</script>
+<div class="main">
+	<div class="layui-tab">
+	  <ul class="layui-tab-title">
+	    <li class="layui-this">求职列表</li>
+	  </ul>
+	  <div class="layui-tab-content">
+	    <div class="layui-tab-item layui-show">
+			<table class="table table-bordered" id="qz-customer_table">
+				<thead class="thead_nav">
+					<tr>
+						<td>求职人</td>
+						<td>联系方式</td>
+						<td>求职岗位</td>
+						<td>简历</td>
+						<td>申请时间</td>
+					</tr>
+				</thead>
+				<tbody>
+						
+				</tbody>
+			</table>
+	    </div>
+	  </div>
+	</div>
+	<!--详情 modal 1 -->
+	<div class="modal modal1" tabindex="-1" id="myModal" role="dialog">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">详情</h5>
+	        <button type="button">
+	          <span onclick="modalclose()">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body modal_nav">
+	        <!-- <p>默认内容</p> -->
+
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-primary" onclick="modalclose()">关闭</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+<!-- /modal 1 -->
+</div>

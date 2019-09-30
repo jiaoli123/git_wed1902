@@ -1,0 +1,391 @@
+<style>
+	.modal-backdrop.show {
+		display: none;
+	}
+	.thead_nav{
+		background-color: lightblue;
+	}
+	.table tr.current {
+		background-color: #ededed;
+	}
+	.layui-tab-title{
+		margin-bottom: 0;
+	}
+	.ann {
+		position: relative;
+	}
+	.ann .btn {
+		width: 100px;
+		position: absolute;
+		top: 5px;
+		right: 100px;
+		cursor: pointer;
+		z-index: 1;
+		height: 38px;
+	}
+	.table{
+		text-align: center;
+	}
+</style>
+<script>
+	var id;
+	sessionStorage.setItem("lid",null)
+	var baseURL="http://203.195.246.58:7777";
+	//加载数据
+	function reloadData(){
+		var url = baseURL+"/CustomerService/findAll";
+		$.get(url,function(result){
+			data = result.data
+				// console.log(data)
+			if(result.status === 200){
+				//清空数据
+				$("#customer_table tbody").empty();
+				result.data.forEach(function(item){
+					$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.username+`</td>
+						<td>`+item.realname+`</td>
+						<td>`+item.gender+`</td>
+                        <td>`+item.status+`</td>
+						<td>
+							<a class="btn_del" href="#"><i class="iconfont icon-shanchu"></i></a>
+							<a class="btn_upd" href="#"><i class="iconfont icon-xiugai"></i></a>
+						</td>
+					</tr>`).appendTo("#customer_table tbody");
+				});
+			}
+
+		});
+	}
+	//提交表单
+	function submitcustomer(){
+		var id=sessionStorage.getItem("lid");
+		sessionStorage.setItem("lid",null)
+		var username=$("#customer_form input[name=username").val();
+		var realname=$("#customer_form input[name=realname").val();
+		var gender=$("#customer_form input[name=gender]:checked").val();
+		var url=baseURL+"/CustomerService/saveOrUpdate";
+		if (id=="null") {
+		 	var data={
+				username:username,
+				realname:realname,
+				gender:gender
+		 	}
+		 }else{
+		 	var data={
+				id:id,
+				username:username,
+				realname:realname,
+				gender:gender
+		 	}
+		 }
+		$.post(url,data,function(result){
+			if (result.status===200) {
+				reloadData()
+				closeModal()
+			}else{
+				alert(result.message)
+			}
+		})
+	}
+	//除重函数
+	function chuchong(arr){
+		var zu = []
+		for(let i = 0;i<arr.length;i++)
+		{
+			if(zu.indexOf(arr[i]) == -1)
+			{
+				zu.push(arr[i])
+			}
+		}
+		return zu
+	}
+	 // 关闭模态框
+	function closeModal(){
+		$("#Modal").modal("hide");
+	}
+	$(function(){
+		reloadData();
+		//删除
+		$("#customer_table").on("click","a",function(event){
+			switch(this.className){
+				case "btn_del":
+				    //删除数据
+			 		var id=$(this).parents("tr").children().eq(0).find("input").val();
+			 		var url=baseURL+"/CustomerService/deleteById";
+					var data={
+						id:id
+					}
+			 		$.post(url,data,function(result){
+			 			if(result.status === 200){
+			 				// 更新页面
+			 				alert("删除成功")
+			 				reloadData();
+			 			} else {
+			 				alert(result.message);
+			 			}
+			 		})
+			 		break;
+			 	case "btn_upd":
+			 		$("#Modal").modal("show");
+			 		var id=$(this).parents("tr").children().eq(0).find("input").val();
+					sessionStorage.setItem("lid",id)
+					var username=$(this).parents("tr").children().eq(1).text();
+					var realname=$(this).parents("tr").children().eq(2).text();
+					var gender=$(this).parents("tr").children().eq(3).text();
+					$("#customer_form input[name=id]").val(id);
+					$("#customer_form input[name=username]").val(username);
+					$("#customer_form input[name=realname]").val(realname);
+					$("#customer_form input[name=gender]").val(gender);
+			 		break;
+
+			}
+		})
+		//状态
+		$.get(baseURL+"/CustomerService/findAll",function(result){
+			if (result.status===200) {
+				var a=[];
+				result.data.forEach(function(item){
+					a.push(item.status)
+				})
+				a=chuchong(a);
+				a.forEach(function(item){
+					$(`
+	   				 <option value="`+item+`">`+item+`</option>
+	    			`).appendTo("#one")
+				})
+			}
+		})
+		//性别
+		$.get(baseURL+"/CustomerService/findAll",function(result){
+			if (result.status===200) {
+				var a=[];
+				result.data.forEach(function(item){
+					a.push(item.gender)
+				})
+				a=chuchong(a);
+				a.forEach(function(item){
+					$(`
+	   				 <option value="`+item+`">`+item+`</option>
+	    			`).appendTo("#two")
+				})
+			}
+		})
+		//状态
+		$("#one").change(function(){
+			if ($("#one").val()==="") {
+				reloadData();
+			}
+			var status=$(this).val()
+			$.get(baseURL+"/CustomerService/findByEducation","status="+status,function(result){
+				if (result.status===200) {
+					alert("筛选成功")
+					$("#customer_table tbody").empty();
+					result.data.forEach(function(item){
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.username+`</td>
+						<td>`+item.realname+`</td>
+						<td>`+item.gender+`</td>
+                        <td>`+item.status+`</td>
+						<td>
+							<a class="btn_del" href="#"><i class="iconfont icon-shanchu"></i></a>
+						</td>
+					</tr>`).appendTo("#customer_table tbody")
+					})
+				}
+			})
+		})
+		//性别
+		$("#two").change(function(){
+			if ($("#two").val()==="") {
+				reloadData();
+			}
+			var gender=$(this).val()
+			$.get(baseURL+"/CustomerService/findByGender","gender="+gender,function(result){
+				if (result.status===200) {
+					alert("筛选成功")
+					$("#customer_table tbody").empty();
+					result.data.forEach(function(item){
+						$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.username+`</td>
+						<td>`+item.realname+`</td>
+						<td>`+item.gender+`</td>
+                        <td>`+item.status+`</td>
+						<td>
+							<a class="btn_del" href="#"><i class="iconfont icon-shanchu"></i></a>
+						</td>
+					</tr>`).appendTo("#customer_table tbody")
+					})
+				}
+			})
+		})
+		//搜索
+		$("#search_submit").on("click",function(event){
+			var search_val = $("#search").val()
+			if($(".saosuo").text() == '筛选用户名'){
+				$.get(baseURL+"/CustomerService/findByUsername","username="+search_val,function(result){
+					if(result.status == 200){
+						$("#customer_table tbody").empty()
+						result.data.forEach(function(item){
+								$(`<tr>
+						<td><input type="checkbox" value="`+item.id+`"></td>
+						<td>`+item.username+`</td>
+						<td>`+item.realname+`</td>
+						<td>`+item.gender+`</td>
+                        <td>`+item.status+`</td>
+						<td>
+							<a class="btn_del" href="#"><i class="iconfont icon-shanchu"></i></a>
+						</td>
+					</tr>`).appendTo("#customer_table tbody")									
+						})
+
+					}
+				})
+			}else if($(".saosuo").text() == '不做筛选'){
+				reloadData()
+			}
+		})	
+		// 为按钮绑定事件
+		$("#btn_add").click(function(){
+			//显示模态框
+			$("#Modal").modal("show");
+		});
+		// 为表单绑定事件
+		$("tbody").on({
+			mouseover:function(){
+				this.className = "current"
+			},
+			mouseout:function(){
+				this.className = ""
+			}
+		},'tr')
+	})
+</script>
+<div class="main">
+	<!-- 发布职位 -->
+	<div class="ann row">
+		<div class="col-10"></div>
+		<div class="col">
+			<button type="button" class="btn btn-primary" id="btn_add">添加客服</button>
+		</div>
+	</div>
+	<div class="layui-tab">
+	  <ul class="layui-tab-title">
+	    <li class="layui-this">客服列表</li>
+	  </ul>
+	  <div class="layui-tab-content">
+	    <div class="layui-tab-item layui-show">
+	    	<div class="form-row">
+				<div class="input-group col-md-2 mb-3">
+				  	<select class="custom-select" id="one">
+				    	<option selected>在线</option>
+				  	</select>
+				</div>
+				<div class="input-group col-md-2 mb-3">
+				  	<select class="custom-select" id="two">
+				    	<option selected>性别</option>
+				  	</select>
+				</div>
+				<div class="col-5"></div>
+				<!-- 查询 -->
+				<div class="col-3">
+					<div class="input-group mb-3">
+					  <div class="input-group-prepend">
+					    <button class="btn btn-outline-secondary dropdown-toggle saosuo" type="button" data-toggle="dropdown">筛选类型</button>
+					    <div class="dropdown-menu open">
+					      <a class="dropdown-item item1" href="#">不做筛选</a>
+					      <a class="dropdown-item item2" href="#">筛选用户名</a>
+					    </div>
+					    <!-- 点击筛选的切换 -->
+					    <script>
+					    	$(function() {
+					    		$(".dropdown-item").on("click",function(event){
+					    			$(".saosuo").text($(this).text())
+					    		})
+					    	})
+					    </script>
+					  </div>
+					  <input id="search" type="text" class="form-control" placeholder="搜索" style="text-indent: 1em;">
+						<div class="input-group-prepend">
+						    <span id="search_submit" class="input-group-text" style="cursor:pointer;" id="basic-addon1">提交</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<table class="table table-bordered" id="customer_table">
+				<thead class="thead_nav">
+					<tr>
+						<td>#</td>
+						<td>用户名</td>
+						<td>姓名</td>
+						<td>性别</td>
+						<td>状态</td>
+						<td>操作</td>
+					</tr>
+				</thead>
+				<tbody>
+						
+				</tbody>
+			</table>
+	    </div>
+	  </div>
+	</div>
+	<!-- 修改或添加Modal -->
+	<div class="modal fade" id="Modal" tabindex="-1">
+	  <div class="modal-dialog modal-xl ">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="exampleModalLabel">添加信息</h5>
+	        <button type="button" class="close" onclick="closeModal()">
+	          <span>&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <form id="customer_form">
+	            <input type="hidden" name="id" />
+	        	<div class="form-group row">
+				    <div class="col-2 text-center">
+					    <label for="input_username" >用户名</label>
+				    </div>
+				    <div class="col">
+					    <input id="input_username" type="text" class="form-control" name="username"/>	
+				    </div>
+			    </div>
+			    <div class="form-group row">
+				    <div class="col-2 text-center">
+					    <label for="input_realname" >姓名</label>
+				    </div>
+				    <div class="col">
+					     <input id="input_realname" type="text" class="form-control" name="realname"/>	
+				    </div>
+			    </div>
+			    <div class="form-group row">
+				    <div class="col-2 text-center">
+					    <label for="input_gender" >性别</label>
+				    </div>
+				    <div class="col">
+					    <!-- 性别 -->
+						<div class="form-check form-check-inline">
+							<input id="input_gender_male" class="form-check-input" type="radio" name="gender" value="male">
+							<label class="form-check-label" for="input_gender_male">男</label>
+						</div>
+						<div class="form-check form-check-inline">
+							<input id="input_gender_female" class="form-check-input" type="radio" name="gender" value="female">
+							<label class="form-check-label" for="input_gender_female">女</label>
+						</div>
+					<!-- / 性别 -->	
+				    </div>
+			    </div>
+			</form>
+	    </div>
+	    <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" onclick="closeModal()">关闭</button>
+	        <button type="button" class="btn btn-primary" onclick="submitcustomer()">提交</button>
+	    </div>
+	    </div>
+	  </div>
+	</div>
+<!-- /modal -->
+</div>

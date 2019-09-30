@@ -1,0 +1,124 @@
+<style>
+	.table{
+		text-align: center;
+	}
+	.thead_nav{
+		background-color: #333;
+		color: white;
+	}
+	.fuli{
+		overflow-x: hidden;
+	}
+	tbody{
+		text-align: center;
+	}
+</style>
+<div class="fuli">
+ 	<div class="form-row">
+		<div class="input-group col-md-2 mb-3">
+		  <select class="custom-select" id="one">
+		    <option selected>全部</option>
+		  </select>
+		</div>
+	</div>
+	<table class="table" id="fuli_table">
+	  <thead class="thead_nav">
+	    <tr class="row">
+			<td class="col">#</td>
+			<td class="col">福利</td>
+			<td class="col-6"></td>
+			<td class="col">状态</td>
+			<td class="col">操作</td>
+		</tr>
+	  </thead>
+	  <tbody id="fuli_tbody">
+	    
+	  </tbody>
+	</table>
+</div>
+<script>
+	 var baseURL="http://203.195.246.58:7777";
+	//加载数据
+	function reloadData(){
+		$.get(baseURL+"/Welfare/findAll",function(result){
+			if(result.status===200){
+				$("#fuli_table tbody").empty();
+				result.data.forEach(function(item){
+					if (item.status=="使用中") {
+						$(`<tr class="row">
+							<td class="col"><input type="checkbox" value="`+item.id+`"></td>
+							<td class="col">`+item.name+`</td>
+							<td class="col-6"></td>
+							<td class="col" style="color:green">`+item.status+`</td>
+							<td class="col"><div class="btn btn-warning" >冻结</div></td>
+						</tr>`).appendTo("#fuli_table tbody")
+					}else if (item.status=="被冻结") {
+						$(`<tr class="row">
+							<td class="col"><input type="checkbox" value="`+item.id+`"></td>
+							<td class="col">`+item.name+`</td>
+							<td class="col-6"></td>
+							<td class="col" style="color:red">`+item.status+`</td>
+							<td class="col"><div class="btn btn-success" >恢复</div></td>
+						</tr>`).appendTo("#fuli_table tbody")
+					}
+
+				})
+			}
+		})
+	}
+	$(function(){
+		//除重函数
+		function chuchong(arr){
+			var zu = []
+			for(let i = 0;i<arr.length;i++)
+			{
+				if(zu.indexOf(arr[i]) == -1)
+				{
+					zu.push(arr[i])
+				}
+			}
+			return zu
+		}
+		//	全部	
+		$.get(baseURL+"/Welfare/findAll",function(result){
+			if (result.status===200) {
+				var a=[];
+				result.data.forEach(function(item){
+					a.push(item.name)
+				})
+				a=chuchong(a);
+				a.forEach(function(item){
+					$(`
+	   				 <option value="`+item+`">`+item+`</option>
+	    			`).appendTo("#one")
+				})
+			}
+		})
+		//操作
+		$("#fuli_tbody").on("click",".btn",function(event){
+			var value2 =$(this).text();
+			var id = $(this).parents("tr").children().eq(0).children().eq(0).attr("value")
+			var status = ""
+			var name = $(this).parents("tr").children().eq(1).text()
+			if(value2 == '恢复')
+			{
+				status = "使用中";
+			}
+			else if(value2 == '冻结')
+			{
+				status = "被冻结"
+			}
+			var data ={
+				id:id,
+				name:name,
+				status:status
+			}
+			$.post(baseURL+"/Welfare/saveOrUpdate",data,function(result){
+				if(result.status == 200){
+					reloadData()
+				}
+			})
+		})
+		reloadData();
+	})
+</script>
