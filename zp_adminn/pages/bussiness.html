@@ -58,19 +58,48 @@
 		var industry = $("#bussiness_form input[name=industry]").val();
 		var location = $("#bussiness_form input[name=location]").val();
 		var scale = $("#bussiness_form input[name=scale]").val();
-		var data={
-			id:id,
-			name:name,
-			contactName:contactName,
-			contactPhone:contactPhone,
-			industry:industry,
-			location:location,
-			scale:scale
+		var establishedTime = $("#bussiness_form input[name=establishedTime]").val();
+		var registeredCapital = $("#bussiness_form input[name=registeredCapital]").val();
+		var description = $("#bussiness_form textarea[name=description]").val();
+		var businessLicense = $("#bussiness_form input[name=businessLicense]").val();
+
+		if (id=="null") {
+			var status='待审核'
+		 	var data={
+				name:name,
+				contactName:contactName,
+				contactPhone:contactPhone,
+				industry:industry,
+				location:location,
+				scale:scale,
+				status:status,
+				establishedTime:establishedTime,
+				registeredCapital:registeredCapital,
+				description:description,
+				businessLicense:businessLicense
+			}
+		 }else{
+		 	var status='审核通过'
+		 	var data={
+				id:id,
+				name:name,
+				contactName:contactName,
+				contactPhone:contactPhone,
+				industry:industry,
+				location:location,
+				scale:scale,
+				status:status,
+				establishedTime:establishedTime,
+				registeredCapital:registeredCapital,
+				description:description,
+				businessLicense:businessLicense
+			}
 		}
+		
 		var url=baseURL+"/Business/saveOrUpdate";
 		 $.post(url,data,function(result){
             if(result.status === 200){
-	            alert("修改成功");
+	            alert("成功");
 	            closeModal();
 	            // 更新页面
 	            reloadData();
@@ -311,6 +340,11 @@
 				})
 			}
 		})
+		// 为按钮绑定事件
+		$("#btn_add").click(function(){
+			//显示模态框
+			$("#Modal").modal("show");
+		});
 		// 为表单绑定事件
 		$("tbody").on({
 			mouseover:function(){
@@ -325,10 +359,6 @@
 	})
 </script>
 <div class="main">
-	<!-- 按钮 -->
-	<div class="btns px-2 py-2">
-		<button type="button" class="btn btn-danger" id="btn_batch_del">批量删除</button>
-	</div>
 	<!-- / 按钮 -->
 	 <div class="form-row">
 		<div class="input-group col-md-2 mb-3">
@@ -345,6 +375,11 @@
 		  <select class="custom-select one" id="three">
 		    <option selected>规模</option>
 		  </select>
+		</div>
+		<div class="col-4"></div>
+		<!-- 按钮 -->
+		<div class="btns px-2 py-2">
+			<button type="button" class="btn btn-primary" id="btn_add">添加用户</button>
 		</div>
 	</div>
 	<!-- 表格 -->
@@ -374,7 +409,7 @@
 	  <div class="modal-dialog modal-xl ">
 	    <div class="modal-content">
 	      <div class="modal-header">
-	        <h5 class="modal-title" id="exampleModalLabel">修改信息</h5>
+	        <h5 class="modal-title" id="exampleModalLabel">添加/修改信息</h5>
 	        <button type="button" class="close" onclick="closeModal()">
 	          <span>&times;</span>
 	        </button>
@@ -412,6 +447,28 @@
 			    </div>
 			    <div class="form-group row">
 				    <div class="col-2 text-center">
+					    <label for="input_establishedTime" >成立时间</label>
+				    </div>
+				    <div class="col">
+					    <input id="input_establishedTime" type="text" class="form-control" name="establishedTime"/>	
+				    </div>
+				    <div class="col-2 text-center">
+					    <label for="input_registeredCapital" >注册资本</label>
+				    </div>
+				    <div class="col">
+					    <input id="input_registeredCapital" type="text" class="form-control" name="registeredCapital"/>	
+				    </div>
+			    </div>
+			    <div class="form-group row">
+				    <div class="col-2 text-center">
+					    <label for="input_businessLicense" >营业执照</label>
+				    </div>
+				    <div class="col">
+					    <input id="input_businessLicense" type="text" class="form-control" name="businessLicense"/>	
+				    </div>
+			    </div>
+			    <div class="form-group row">
+				    <div class="col-2 text-center">
 					    <label for="input_location" >所在地</label>
 				    </div>
 				    <div class="col">
@@ -426,7 +483,7 @@
 			    </div>
 			     <div class="form-group">
 				    <label for="exampleInputName2">公司简介:</label>
-				    <textarea class="form-control" rows="3"></textarea>
+				    <textarea class="form-control" rows="3" name="description"></textarea>
 				 </div>
 			</form>
 	    </div>

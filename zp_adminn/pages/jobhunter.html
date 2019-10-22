@@ -27,7 +27,7 @@
 <script>
 	var id;
 	sessionStorage.setItem("lid",null)
-	var baseURL="http://47.106.244.1:7777";
+	var baseURL="http://203.195.246.58:7777";
 	//加载数据
 	function reloadData(){
 		var url = baseURL+"/Jobhunter/findAll";
@@ -152,6 +152,7 @@
 					var data={
 						id:id
 					}
+					console.log(id);
 			 		$.post(url,data,function(result){
 			 			if(result.status === 200){
 			 				// 更新页面

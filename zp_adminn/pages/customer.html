@@ -65,8 +65,10 @@
 		var realname=$("#customer_form input[name=realname").val();
 		var gender=$("#customer_form input[name=gender]:checked").val();
 		var url=baseURL+"/CustomerService/saveOrUpdate";
+		var status="在线";
 		if (id=="null") {
 		 	var data={
+		 		status:status,
 				username:username,
 				realname:realname,
 				gender:gender
@@ -74,6 +76,7 @@
 		 }else{
 		 	var data={
 				id:id,
+				status:status, 
 				username:username,
 				realname:realname,
 				gender:gender
